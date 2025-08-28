@@ -1,0 +1,26 @@
+{
+    "name" : "App::Backup",
+    "description" : "This is a Raku Module for those who like to colour their Usage messages.",
+    "perl" : "6.d",
+    "license" : "LGPL-3.0-or-later",
+    "authors" : [
+        "Francis Grizzly Smit <grizzly@smit.id.au>"
+    ],
+    "depends": [
+        "IO::Glob"
+    ],
+    "provides" : {
+        "Usage::Utils" : "lib/Usage/Utils.rakumod"
+    },
+    "source-url" : "https://github.com/grizzlysmit/backup.git",
+    "support" : {
+        "source" : "https://github.com/grizzlysmit/backup.git",
+        "email" : "grizzly@smit.id.au",
+        "bugtracker": "https://github.com/grizzlysmit/backup/issues"
+    },
+    "auth": "zef:grizzlysmit",
+    "version" : "0.1.2",
+    "tags" : [ "usage", "backup", "colored", "coloured", "highlighted" ],
+  "test-depends": [
+  ]
+}
