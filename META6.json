@@ -20,7 +20,7 @@
     },
     "auth": "zef:grizzlysmit",
     "version" : "0.1.2",
-    "tags" : [ "usage", "backup", "colored", "coloured", "highlighted" ],
+    "tags" : [ "usage", "backup", "sync", "rsync" ],
   "test-depends": [
   ]
 }
