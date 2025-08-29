@@ -1,6 +1,48 @@
 unit module BackupAndSync:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
 use IO::Glob;
 
+=begin pod
+
+=head1 App::upgrade-raku
+
+=begin head2
+
+Table of Contents
+
+=end head2
+
+=item1 L<NAME|#name>
+=item1 L<AUTHOR|#author>
+=item1 L<VERSION|#version>
+=item1 L<TITLE|#title>
+=item1 L<SUBTITLE|#subtitle>
+=item1 L<COPYRIGHT|#copyright>
+=item1 # L<Introduction|#introduction>
+=item2 # L<backup.raku specials|#backupraku-specials>
+
+=NAME App::Backup 
+=AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
+=VERSION 0.1.2
+=TITLE App::Backup
+=SUBTITLE A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages.
+
+=COPYRIGHT
+LGPL V3.0+ L<LICENSE|https://github.com/grizzlysmit/GUI-Editors/blob/main/LICENSE>
+
+L<Top of Document|#table-of-contents>
+
+=head1 Introduction
+
+ A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages. 
+
+B<NB: I only support the moar backend for now. And for now I only support the apt command as I use Ubuntu,
+I will give supporting other package managing software some thought>.
+
+b<Note: uses I<rakubrew> under the hood for the actual I<Raku> install/upgrade,  will check for a new version etc.>
+
+
+=end pod
+
 
 
 # the name of this host   #

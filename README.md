@@ -1,4 +1,3 @@
-Grizzly's Backup Suite
-======================
-
+BackupAndSync
+=============
 
