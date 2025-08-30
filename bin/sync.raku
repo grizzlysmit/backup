@@ -78,7 +78,6 @@ Usage:
 
 =end pod
 
-#| Synchronise systems in hosts file.
 multi sub MAIN(--> Int){
     clean-up-mon-sync();
     my Int $result = 0;
@@ -101,6 +100,7 @@ multi sub MAIN(--> Int){
     %results.gist.say;
     exit $result;
 }
+#= Synchronise systems in hosts file.
 
 multi sub MAIN('configs', 'list') returns Int {
     "$config:".say;

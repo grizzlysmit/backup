@@ -66,11 +66,3 @@ Usage:
   sync.raku -- Synchronise systems in hosts file.
 ```
 
-### multi sub MAIN
-
-```raku
-multi sub MAIN() returns Int
-```
-
-Synchronise systems in hosts file.
-
