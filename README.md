@@ -16,9 +16,9 @@ Table of Contents
 
   * [COPYRIGHT](#copyright)
 
-  * [Introduction](#introduction)
+    * [sub backup-device-val(--> Str) is export](#sub-backup-device-val---str-is-export)
 
-    * [backup.raku specials](#backupraku-specials)
+  * [Introduction](#introduction)
 
 NAME
 ====

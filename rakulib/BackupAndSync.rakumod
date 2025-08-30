@@ -17,8 +17,8 @@ Table of Contents
 =item1 L<TITLE|#title>
 =item1 L<SUBTITLE|#subtitle>
 =item1 L<COPYRIGHT|#copyright>
+=item2 # L«sub backup-device-val(--> Str) is export|#sub-backup-device-val---str-is-export»
 =item1 # L<Introduction|#introduction>
-=item2 # L<backup.raku specials|#backupraku-specials>
 
 =NAME BackupAndSync.rakumod 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
