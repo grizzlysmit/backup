@@ -1,0 +1,17 @@
+{
+    "comment": "using doc-n-save",
+    "exts": [
+        "rakumod",
+        "raku",
+        "rakudoc"
+    ],
+    "markdown-path": "README.md",
+    "separate-markdown-files": false,
+    "lib": "rakulib",
+    "only-app": false,
+    "docs": "docs",
+    "additional-pod-files": [
+    ],
+    "bin": "bin",
+    "name": "BackupAndSync"
+}
