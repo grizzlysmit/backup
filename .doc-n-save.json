@@ -6,7 +6,7 @@
         "rakudoc"
     ],
     "markdown-path": "README.md",
-    "separate-markdown-files": false,
+    "separate-markdown-files": true,
     "lib": "rakulib",
     "only-app": false,
     "docs": "docs",
