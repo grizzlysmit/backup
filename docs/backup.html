@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<title>BackupAndSync.rakumod</title>
+<title>Backup</title>
 <meta charset="UTF-8" />
 <link href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAA/wAAAP8AAACGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABA
@@ -575,16 +575,20 @@ footer {
 		<rect x="551.153" y="428.32" transform="matrix(0.4226 -0.9063 0.9063 0.4226 -70.9303 749.6747)" stroke="#000000" stroke-width="1.0588" stroke-miterlimit="10" width="3.517" height="4.372"/>
 </g>
 </svg>
-<h1 class="title">BackupAndSync.rakumod</h1></header><div class="pod-content"><nav><div id="TOC"><table>
+<h1 class="title">Backup</h1></header><div class="pod-content"><nav><div id="TOC"><table>
 <caption>Table of Contents</caption>
-<tr class="toc-level-1"><td class="toc-text"><a href="#BackupAndSync">BackupAndSync</a></td></tr>
+<tr class="toc-level-1"><td class="toc-text"><a href="#App::Backup">App::Backup</a></td></tr>
  <tr class="toc-level-2"><td class="toc-text"><a href="#Table_of_Contents">Table of Contents</a></td></tr>
  <tr class="toc-level-1"><td class="toc-text"><a href="#Name">Name</a></td></tr>
  <tr class="toc-level-1"><td class="toc-text"><a href="#Copyright">Copyright</a></td></tr>
  <tr class="toc-level-1"><td class="toc-text"><a href="#Introduction">Introduction</a></td></tr>
- <tr class="toc-level-1"><td class="toc-text"><a href="#sub_backup-device-val(--&gt;_Str)_is_export_">sub backup-device-val(--&gt; Str) is export </a></td></tr>
+ <tr class="toc-level-1"><td class="toc-text"><a href="#backup.raku_specials">backup.raku specials</a></td></tr>
 </table></div>
-</nav><div id="BackupAndSync.rakumod"></div><div class="subtitle"><p>A <strong>Raku</strong> module for supporting the backup and sync of a set of boxes.</p></div><div class="pod-body"><section name="___top"><h1 id="BackupAndSync"><a href="#___top" class="u" title="go to top of document">BackupAndSync</a></h1>
+<div id="Glossary" class="glossary">
+<div class="glossary-caption">Glossary</div>
+<div class="glossary-defn header">Term explained</div><div class="header glossary-place">In section</div><div class="glossary-defn">multi sub MAIN ("specials" --> Int) </div><div class="glossary-place"><a href="#index-entry-multi_sub_MAIN_(&quot;specials&quot;_--&gt;_Int)_">backup.raku specials</a></div>
+</div>
+</nav><div id="Backup"></div><div class="subtitle"><p>A <strong>Raku</strong> application for backing up a box.</p></div><div class="pod-body"><section name="___top"><h1 id="App::Backup"><a href="#___top" class="u" title="go to top of document">App::Backup</a></h1>
 <h2 id="Table_of_Contents"><a href="#___top" class="u" title="go to top of document">Table of Contents</a></h2>
 <ul>
 <li><p><a href="#name">NAME</a></p></li>
@@ -600,18 +604,20 @@ footer {
 </ul>
 <section>
 <h1 id="Name"><a href="#___top" class="u" title="go to top of document">NAME</a></h1>
-<p>BackupAndSync.rakumod </p>
+<p>Backup </p>
 </section>
 <section>
-<h1 id="Copyright"><a href="#BackupAndSync.rakumod" class="u" title="go to top of document">COPYRIGHT</a></h1>
-<p>LGPL V3.0+ <a href="https://github.com/grizzlysmit/GUI-Editors/blob/main/LICENSE">LICENSE</a></p>
+<h1 id="Copyright"><a href="#Backup" class="u" title="go to top of document">COPYRIGHT</a></h1>
+<p>LGPL V3.0+ <a href="https://github.com/grizzlysmit/backup/blob/main/LICENSE">LICENSE</a></p>
 </section>
-<p><a href="#table-of-contents">Top of Document</a></p><h1 id="Introduction"><a href="#BackupAndSync.rakumod" class="u" title="go to top of document">Introduction</a></h1>
-<pre class="pod-block-code">A B&lt;Raku&gt; module for supporting the backup and sync of a set of boxes. </pre></section><section name="pod"><h1 id="sub_backup-device-val(--&gt;_Str)_is_export_"><a href="#BackupAndSync.rakumod" class="u" title="go to top of document">sub backup-device-val(--&gt; Str) is export </a></h1>
-<pre class="pod-block-code">sub backup-device-val(--&gt; Str) is export 
+<p><a href="#table-of-contents">Top of Document</a></p><h1 id="Introduction"><a href="#Backup" class="u" title="go to top of document">Introduction</a></h1>
+<pre class="pod-block-code">A B&lt;Raku&gt; application for backing up a box. </pre></section><section name="pod"><h1 id="backup.raku_specials"><a href="#Backup" class="u" title="go to top of document">backup.raku specials</a></h1>
+<pre class="pod-block-code">backup.raku specials --help
+Usage:
+  backup.raku specials -- backup special files and directories to per system special location.
 
-</pre><p><a href="#table-of-contents">Top of Document</a></p></section>		</div>
-</div><footer><div>Rendered from <span class="path">UNNAMED</span></div><div>at <span class="time">2025-08-30T01:39:56Z</span></div></footer>
+</pre><p><a href="#table-of-contents">Top of Document</a></p></section><a name="index-entry-multi_sub_MAIN_(&quot;specials&quot;_--&gt;_Int)_"></a><article><code class="pod-code-inline">multi sub MAIN ("specials" --> Int) </code>backup special files and directories to per system special location.</article>		</div>
+</div><footer><div>Rendered from <span class="path">UNNAMED</span></div><div>at <span class="time">2025-08-30T01:39:59Z</span></div></footer>
 	</body>
 </html>
 
