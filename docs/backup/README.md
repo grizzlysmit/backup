@@ -68,13 +68,3 @@ Usage:
 
 [Top of Document](#table-of-contents)
 
-### multi sub MAIN
-
-```raku
-multi sub MAIN(
-    "specials"
-) returns Int
-```
-
-backup special files and directories to per system special location.
-

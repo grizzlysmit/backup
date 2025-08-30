@@ -85,7 +85,6 @@ L<Top of Document|#table-of-contents>
 =end pod
 
 
-#| backup special files and directories to per system special location.
 multi sub MAIN('specials') returns Int {
     my Int $result = 0;
     my %results;
@@ -98,6 +97,7 @@ multi sub MAIN('specials') returns Int {
     %results.gist.say;
     exit $result;
 }
+#= backup special files and directories to per system special location.
 
 multi sub MAIN('new', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device) returns Int {
     my Int $result = 0;
