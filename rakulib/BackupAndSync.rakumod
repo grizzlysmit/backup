@@ -3,7 +3,7 @@ use IO::Glob;
 
 =begin pod
 
-=head1 App::upgrade-raku
+=head1 BackupAndSync
 
 =begin head2
 
@@ -20,11 +20,11 @@ Table of Contents
 =item1 # L<Introduction|#introduction>
 =item2 # L<backup.raku specials|#backupraku-specials>
 
-=NAME App::Backup 
+=NAME BackupAndSync.rakumod 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
 =VERSION 0.1.2
-=TITLE App::Backup
-=SUBTITLE A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages.
+=TITLE BackupAndSync.rakumod
+=SUBTITLE A B<Raku> module for supporting the backup and sync of a set of boxes.
 
 =COPYRIGHT
 LGPL V3.0+ L<LICENSE|https://github.com/grizzlysmit/GUI-Editors/blob/main/LICENSE>
@@ -33,13 +33,7 @@ L<Top of Document|#table-of-contents>
 
 =head1 Introduction
 
- A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages. 
-
-B<NB: I only support the moar backend for now. And for now I only support the apt command as I use Ubuntu,
-I will give supporting other package managing software some thought>.
-
-b<Note: uses I<rakubrew> under the hood for the actual I<Raku> install/upgrade,  will check for a new version etc.>
-
+ A B<Raku> module for supporting the backup and sync of a set of boxes. 
 
 =end pod
 
@@ -117,6 +111,20 @@ if $backup-device ~~ rx/ ^^ \s* $$ / {
     $backup-device ~~ s:g/ \{ 'hostname' \} /$thishost/;
     $backup-device ~~ s:g/ \{ 'home' \} /$home/;
 }
+
+=begin pod
+
+=head1 sub backup-device-val(--> Str) is export 
+
+=begin code :lang<raku>
+
+sub backup-device-val(--> Str) is export 
+
+=end code
+
+L<Top of Document|#table-of-contents>
+
+=end pod
 
 sub backup-device-val(--> Str) is export {
     return $backup-device;

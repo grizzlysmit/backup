@@ -36,26 +36,20 @@ Table of Contents
 =item1 # L<Introduction|#introduction>
 =item2 # L<backup.raku specials|#backupraku-specials>
 
-=NAME App::Backup 
+=NAME Backup 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
 =VERSION 0.1.2
-=TITLE App::Backup
-=SUBTITLE A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages.
+=TITLE Backup
+=SUBTITLE A B<Raku> application for backing up a box.
 
 =COPYRIGHT
-LGPL V3.0+ L<LICENSE|https://github.com/grizzlysmit/GUI-Editors/blob/main/LICENSE>
+LGPL V3.0+ L<LICENSE|https://github.com/grizzlysmit/backup/blob/main/LICENSE>
 
 L<Top of Document|#table-of-contents>
 
 =head1 Introduction
 
- A B<Raku> application for updating/upgrading the local B<Raku> install. It also installs and upgrades the packages and any system packages. 
-
-B<NB: I only support the moar backend for now. And for now I only support the apt command as I use Ubuntu,
-I will give supporting other package managing software some thought>.
-
-b<Note: uses I<rakubrew> under the hood for the actual I<Raku> install/upgrade,  will check for a new version etc.>
-
+ A B<Raku> application for backing up a box. 
 
 =end pod
 
@@ -74,7 +68,24 @@ my Str @backup-files = files-val();
 # the individual files or directory's to independently backup #
 my Str @backup-specials = specials-val();
 
+=begin pod
 
+=head1 backup.raku specials
+
+=begin code :lang<bash>
+
+backup.raku specials --help
+Usage:
+  backup.raku specials -- backup special files and directories to per system special location.
+
+=end code
+
+L<Top of Document|#table-of-contents>
+
+=end pod
+
+
+#| backup special files and directories to per system special location.
 multi sub MAIN('specials') returns Int {
     my Int $result = 0;
     my %results;

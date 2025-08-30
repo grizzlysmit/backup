@@ -15,6 +15,42 @@ if ! insure-config-is-present() {
     die "problem with config files";
 }
 
+=begin pod
+
+=head1 App::Sync
+
+=begin head2
+
+Table of Contents
+
+=end head2
+
+=item1 L<NAME|#name>
+=item1 L<AUTHOR|#author>
+=item1 L<VERSION|#version>
+=item1 L<TITLE|#title>
+=item1 L<SUBTITLE|#subtitle>
+=item1 L<COPYRIGHT|#copyright>
+=item1 # L<Introduction|#introduction>
+=item2 # L<sync.raku|#syncraku>
+
+=NAME sync.raku 
+=AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
+=VERSION 0.1.2
+=TITLE sync.raku
+=SUBTITLE A B<Raku> application for synchronising a set of boxes.
+
+=COPYRIGHT
+LGPL V3.0+ L<LICENSE|https://github.com/grizzlysmit/backup/blob/main/LICENSE>
+
+L<Top of Document|#table-of-contents>
+
+=head1 Introduction
+
+ A B<Raku> application for synchronising a set of boxes. 
+
+=end pod
+
 # the hosts to keep synchronised #
 #my Str @hosts = qw{rakbat killashandra pern};
 my Str @hosts = hosts-val();
@@ -28,6 +64,21 @@ my Str @sync-files = files-val();
 # the individual files or directory's to independently backup #
 my Str @sync-specials = specials-val();
 
+=begin pod
+
+=head1 sync.raku
+
+=begin code :lang<bash>
+
+sync.raku --help
+Usage:
+  sync.raku -- Synchronise systems in hosts file.
+
+=end code
+
+=end pod
+
+#| Synchronise systems in hosts file.
 multi sub MAIN(--> Int){
     clean-up-mon-sync();
     my Int $result = 0;
