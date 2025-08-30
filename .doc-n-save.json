@@ -11,6 +11,8 @@
     "only-app": false,
     "docs": "docs",
     "additional-pod-files": [
+        "backup", 
+        "sync"
     ],
     "bin": "bin",
     "name": "BackupAndSync"
