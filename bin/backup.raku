@@ -38,7 +38,7 @@ Table of Contents
 
 =NAME Backup 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
-=VERSION 0.1.2
+=VERSION 0.1.3
 =TITLE Backup
 =SUBTITLE A B<Raku> application for backing up a box.
 

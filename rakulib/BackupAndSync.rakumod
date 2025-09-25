@@ -1,4 +1,4 @@
-unit module BackupAndSync:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
+unit module BackupAndSync:ver<0.1.3>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
 use IO::Glob;
 
 =begin pod
