@@ -113,6 +113,7 @@ multi sub MAIN('new', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is 
     %results.gist.say;
     exit $result;
 }
+#= create a new backup on device.
 
 multi sub MAIN('add-to-last', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device){
     my Int $result = 0;

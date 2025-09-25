@@ -109,6 +109,7 @@ multi sub MAIN('configs', 'list') returns Int {
     }
     exit 0;
 }
+#= list the configuration files.
 
 multi sub MAIN('set', 'device', Str:D $device) returns Int {
    if set-device($device) {
