@@ -1,5 +1,9 @@
 unit module BackupAndSync:ver<0.1.3>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
+my Int:D $version-major     = 0;
+my Int:D $version-minor     = 1;
+my Int:D $version-sub-minor = 3;
 use IO::Glob;
+use Guage;
 
 =begin pod
 
@@ -38,6 +42,14 @@ L<Top of Document|#table-of-contents>
 =end pod
 
 
+sub version( --> Str:D) is export {
+    return sprintf "%d.%d.%d", $version-major, $version-minor, $version-sub-minor;
+}
+
+sub version-suffix( --> Str:D) is export {
+    return  $*KERNEL.archname;
+}
+
 
 # the name of this host   #
 constant $thishost is export = qx<hostname>.chomp;
@@ -50,8 +62,6 @@ constant $config is export = "$home/.local/share/backup-and-sync";
 
 # the user name #
 constant $user is export = %*ENV<USER>.Str();
-
-my @signal;
 
 # the editor to use #
 my Str $editor = '';
@@ -73,6 +83,8 @@ if %*ENV<GUI_EDITOR>:exists {
         $editor = $vi;
     }
 }
+
+insure-config-is-present();
 
 # The default name of the backup device #
 my Str @backup-devices = slurp("$config/device").split("\n").map( { my Str $e = $_; $e ~~ s/ '#' .* $$ //; $e } ).map( { $_.trim() } ).grep: { !rx/ [ ^^ \s* '#' .* $$ || ^^ \s* $$ ] / };
@@ -438,7 +450,16 @@ sub describe-config-file(Str $file) returns Str:D is export {
     return $result;
 }
 
-sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files, @backup-specials) returns List is export {
+sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files, @backup-specials,
+                                                         Bool:D $progress, Bool:D $delete --> List) is export {
+    LEAVE {
+        deinit-term(0);
+    }
+    init-term();
+    my &call-progress-bar = {
+        progress-bar("", get-place(), get-length());
+    };
+    signal(SIGWINCH).tap( { &init-term(),  &call-progress-bar(); } );
     "$thishost.local <---> $backup-to".say;
     if $backup-to.IO !~~ :e && $backup-to.IO.dirname.IO !~~ :e {
         my $rr = run 'mkdir', '-pv', $backup-to;
@@ -448,8 +469,13 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
         }
     }
     my %results;
-    my $exclude-option = "--exclude-from=$config/exclude-files";
     my Int $result = 0;
+    my @opts = "--exclude-from=$config/exclude-files";
+    push @opts = "--progress" if $progress;
+    push @opts, "--delete" if $delete;
+    set-length(@backup-dirs + @backup-files + 1);
+    init-place();
+    progress-bar("", get-place(), get-length());
     for @backup-dirs -> $dir {
         say "[$dir/]";
         my Str $t = "$backup-to/$dir/".IO.dirname;
@@ -460,8 +486,10 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
                 next;
             }
         }
-        say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/$dir/", "$backup-to/$dir/";
-        my Proc $r = run "rsync", "-auv", "--progress", $exclude-option, "$home/$dir/", "$backup-to/$dir/";
+        say join ' ', "rsync", "-auv", |@opts, "$home/$dir/", "$backup-to/$dir/";
+        my Proc $r = run "rsync", "-auv", |@opts, "$home/$dir/", "$backup-to/$dir/";
+        inc-place();
+        progress-bar("", get-place(), get-length());
         %results{$dir} = $r.exitcode unless $r.exitcode == 0;
         $result +|= $r.exitcode;
         say "";
@@ -476,8 +504,10 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
                 next;
             }
         }
-        say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/$file", "$backup-to/$file";
-        my Proc $r = run "rsync", "-auv", "--progress", $exclude-option, "$home/$file", "$backup-to/$file";
+        say join ' ', "rsync", "-auv", |@opts, "$home/$file", "$backup-to/$file";
+        my Proc $r = run "rsync", "-auv", |@opts, "$home/$file", "$backup-to/$file";
+        inc-place();
+        progress-bar("", get-place(), get-length());
         %results{$file} = $r.exitcode unless $r.exitcode == 0;
         "Error: failed to read/write $home/$file --> $backup-to/$file".say unless $r.exitcode == 0;
         $result +|= $r.exitcode;
@@ -497,19 +527,32 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
         $result +|= $res.exitcode;
         return $result, %results;
     }
-    say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/specials/", $t3;
-    my Proc $rr = run "rsync", "-auv", "--progress", $exclude-option, "$home/specials/", $t3;
+    say join ' ', "rsync", "-auv", |@opts, "$home/specials/", $t3;
+    my Proc $rr = run "rsync", "-auv", |@opts, "$home/specials/", $t3;
     %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
+    inc-place();
+    progress-bar("", get-place(), get-length());
     $result +|= $rr.exitcode;
     dd %results;
     say "";
+    progress-bar("", get-length, get-length);
+    sleep(5);
     return $result, %results;
-} # sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files, @backup-specials) returns List is export #
+} #`« sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files,
+                             @backup-specials, Bool:D $progress, Bool:D $delete) returns List is export »
 
-sub specials(Str $thishost, Str @backup-specials --> List) is export {
+sub specials(Str $thishost, Str @backup-specials, 
+                                 Bool:D $progress, Bool:D $delete --> List) is export {
+    LEAVE {
+        deinit-term(0);
+    }
+    init-term();
+    my &call-progress-bar = {
+        progress-bar("", get-place(), get-length());
+    };
+    signal(SIGWINCH).tap( { &init-term(),  &call-progress-bar(); } );
     "$thishost.local <---> specials".say;
     my %results;
-    my $exclude-option = "--exclude-from=$config/exclude-files";
     my Int $result = 0;
     say join ' ', "mkdir", "-pv", "$home/specials/$thishost";
     my Proc $res0 = run "mkdir", "-pv", "$home/specials/$thishost";
@@ -518,6 +561,12 @@ sub specials(Str $thishost, Str @backup-specials --> List) is export {
         $result +|= $res0.exitcode;
         return $result, %results;
     }
+    my @opts = "--exclude-from=$config/exclude-files";
+    push @opts = "--progress" if $progress;
+    push @opts, "--delete" if $delete;
+    set-length(@backup-specials + 0);
+    init-place();
+    progress-bar("", get-place(), get-length());
     for @backup-specials -> $special {
         my Str $t = "$home/$special";
         say "[$special]";
@@ -535,8 +584,8 @@ sub specials(Str $thishost, Str @backup-specials --> List) is export {
                     "error cannot mkdir: $t4, perhaps $home is not writeable".say;
                     next;
                 }
-                say join ' ', "rsync", "-auv", "--progress", "$home/$special/", $exclude-option, "$home/specials/$thishost/$special/";
-                my Proc $rr = run "rsync", "-auv", "--progress", "$home/$special/", $exclude-option, "$home/specials/$thishost/$special/";
+                say join ' ', "rsync", "-auv", |@opts, "$home/$special/", "$home/specials/$thishost/$special/";
+                my Proc $rr = run "rsync", "-auv", |@opts, "$home/$special/", "$home/specials/$thishost/$special/";
                 dd $rr;
                 dd $result;
                 %results{"$home/specials/$thishost/$special"} = $rr.exitcode unless $rr.exitcode == 0;
@@ -556,8 +605,8 @@ sub specials(Str $thishost, Str @backup-specials --> List) is export {
                     "error cannot mkdir: $t4, perhaps $home is not writeable".say;
                     next;
                 }
-                say join ' ', "rsync", "-auv", "--progress", "$home/$special/", $exclude-option, "$home/specials/$thishost/$special/";
-                my Proc $rr = run "rsync", "-auv", "--progress", "$home/$special/", $exclude-option, "$home/specials/$thishost/$special/";
+                say join ' ', "rsync", "-auv", |@opts, "$home/$special/", "$home/specials/$thishost/$special/";
+                my Proc $rr = run "rsync", "-auv", |@opts, "$home/$special/", "$home/specials/$thishost/$special/";
                 dd $rr;
                 dd $result;
                 %results{"$home/specials/$thishost/$special"} = $rr.exitcode unless $rr.exitcode == 0;
@@ -577,22 +626,27 @@ sub specials(Str $thishost, Str @backup-specials --> List) is export {
                     "error cannot mkdir: $t4, perhaps $home is not writeable".say;
                     next;
                 }
-                say join ' ', "rsync", "-auv", "--progress", "$home/$special", $exclude-option, "$home/specials/$thishost/$special";
-                my Proc $rr = run "rsync", "-auv", "--progress", "$home/$special", $exclude-option, "$home/specials/$thishost/$special";
+                say join ' ', "rsync", "-auv", |@opts, "$home/$special", "$home/specials/$thishost/$special";
+                my Proc $rr = run "rsync", "-auv", |@opts, "$home/$special", "$home/specials/$thishost/$special";
                 dd $rr;
                 dd $result;
                 %results{"$home/specials/$thishost/$special"} = $rr.exitcode unless $rr.exitcode == 0;
                 $result +|= $rr.exitcode;
             }
         }
+        inc-place();
+        progress-bar("", get-place(), get-length());
         say "";
     }
     dd %results;
     say "";
+    progress-bar("", get-length(), get-length());
+    sleep(5);
     return $result, %results;
-} # sub specials(Str $thishost, Str @backup-specials --> List) is export #
+} #`« sub specials(Str $thishost, Str @backup-specials, 
+                                 Bool:D $progress, Bool:D $delete --> List) is export »
 
-sub restore-me(Str $thishost, Str $restore-from, $to, Bool $force, Str @backup-dirs, Str @backup-files) returns Int is export {
+sub restore-me(Str $thishost, Str $restore-from, $to, Bool $force, Str @backup-dirs, Str @backup-files --> Int) is export {
     "$thishost.local <---> $restore-from".say;
     my $options = '-auv';
     my $exclude-option = "--exclude-from=$config/exclude-files";
@@ -630,7 +684,7 @@ sub restore-me(Str $thishost, Str $restore-from, $to, Bool $force, Str @backup-d
         say "";
     }
     return $result;
-} # sub restore-me(Str $thishost, Str $restore-from, $to, Bool $force, Str @backup-dirs, Str @backup-files) returns Int is export #
+} #`« sub restore-me(Str $thishost, Str $restore-from, $to, Bool $force, Str @backup-dirs, Str @backup-files --> Int) is export »
 
 sub clean-up-mon-sync( --> Bool) is export {
     my Bool $result = True;
@@ -646,7 +700,48 @@ sub clean-up-mon-sync( --> Bool) is export {
     return $result;
 } # sub clean-up-mon-sync( --> Bool) is export #
 
-sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync-specials) returns List is export {
+my Str:D $current-host = '';
+
+sub sync-me-master(Bool:D $progress, Bool:D $delete --> List) is export {
+    LEAVE {
+        deinit-term(0);
+    }
+    init-term(Bars::Two);
+    my &call-progress-bar = {
+        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+        progress-bar(" Total: ", get-place(), get-length());
+    };
+    signal(SIGWINCH).tap( { &init-term(Bars::Two),  &call-progress-bar(); } );
+    my %results;
+    my Int $result = 0;
+    my Str @hosts = hosts-val();
+    set-length((@internal-dirs + @internal-files + 2 * @hosts) * @hosts.grep( { $_ ne $thishost } ));
+    init-place();
+    progress-bar(" Total: ", get-place(), get-length());
+    for @hosts -> $host {
+        if $host eq $thishost {
+            say "$thishost.local <---> $host.local: skipped";
+        } elsif ! shell("ping -c 1 $host.local > /dev/null 2>&1 ") {
+            say "$host.local does not exist  or is down";
+            say "$thishost.local <---> $host.local: skipped";
+        } else {
+            $current-host = $host;
+            my ($r, %results_catch) = sync-me($thishost, $host, @internal-dirs, @internal-files, @internal-specials, $progress, $delete);
+            %results{$host} = %results_catch;
+            $result +|= $r;
+            "\$r == $r".say;
+            dd $result;
+        }
+    }
+    progress-bar(" Total: ", get-length(), get-length());
+    sleep(5);
+    signal().tap({ exit $_ });
+    return $result, %results;
+} #`« sub sync-me-master(Bool:D $progress, Bool:D $delete --> List) is export »
+
+sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files,
+                        Str @sync-specials, 
+                                 Bool:D $progress, Bool:D $delete --> List) is export {
     CATCH {
         default {
             #"$home/.sync-flags/$host".IO.unlink;
@@ -660,13 +755,10 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
     @signal.push: {
         "$home/.sync-flags/$host".IO.unlink;
     };
-    my &stack = sub ( --> Nil) {
-        while @signal {
-            my &elt = @signal.pop;
-            &elt();
-        }
-    };
-    signal(SIGINT, SIGHUP, SIGQUIT, SIGTERM, SIGQUIT).tap( { &stack(); say "$_ Caught"; exit 0 } );
+    set-sub-length(@internal-dirs + @internal-files + 2 * @internal-hosts);
+    init-sub-place();
+    sub-progress-bar("$current-host: ", get-place(), get-length());
+    #signal(SIGINT, SIGHUP, SIGQUIT, SIGTERM, SIGQUIT).tap( { &stack(); say "$_ Caught"; exit 0 } );
     "$thishost.local <---> $host.local".say;
     my Int $result = 0;
     my Int:D $cnt = 0;
@@ -675,16 +767,18 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         $sync-flags.IO.mkdir();
     }
     "$sync-flags/$host".IO.spurt: $cnt;
-    my $exclude-option = "--exclude-from=$config/exclude-files";
     my %results;
+    my @opts = "--exclude-from=$config/exclude-files";
+    push @opts = "--progress" if $progress;
+    push @opts, "--delete" if $delete;
     for @sync-dirs -> $dir {
         say "[$dir/]";
         my Str $t = "$home/$dir/";
         if $t.IO ~~ :e {
             my $t0 = $t.IO.dirname;
             run 'ssh', "$user@$host.local", "mkdir -pv '$t0'";
-            say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/$dir/", "$user@$host.local:$home/$dir/";
-            my Proc $r = run "rsync", "-auv", "--progress", "$home/$dir/", $exclude-option, "$user@$host.local:$home/$dir/";
+            say join ' ', "rsync", "-auv", |@opts, "$home/$dir/", "$user@$host.local:$home/$dir/";
+            my Proc $r = run "rsync", "-auv", |@opts, "$home/$dir/", "$user@$host.local:$home/$dir/";
             dd $r;
             dd $result;
             %results{$dir} = $r.exitcode unless $r.exitcode == 0;
@@ -693,8 +787,8 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         if run 'ssh', "$user@$host.local", "ls -d $t" {
             my $t0 = $t.IO.dirname;
             run 'mkdir', '-pv', $t0;
-            say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$home/$dir/", "$home/$dir/";
-            my Proc $r = run "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$home/$dir/", "$home/$dir/";
+            say join ' ', "rsync", "-auv", |@opts, "$user@$host.local:$home/$dir/", "$home/$dir/";
+            my Proc $r = run "rsync", "-auv", |@opts, "$user@$host.local:$home/$dir/", "$home/$dir/";
             %results{$dir} = $r.exitcode unless $r.exitcode == 0;
             dd $r;
             dd $result;
@@ -703,6 +797,10 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         say "";
         $cnt++;
         "$sync-flags/$host".IO.spurt: $cnt;
+        inc-sub-place();
+        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+        inc-place();
+        progress-bar(" Total: ", get-place(), get-length());
     }
     for @sync-files -> $file {
         say "[$file]";
@@ -710,8 +808,8 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         if $t.IO ~~ :e {
             my $t0 = $t.IO.dirname;
             run 'ssh', "$user@$host.local", "mkdir -pv '$t0'";
-            say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/$file", "$user@$host.local:$home/$file";
-            my Proc $r = run "rsync", "-auv", "--progress", $exclude-option, "$home/$file", "$user@$host.local:$home/$file";
+            say join ' ', "rsync", "-auv", |@opts, "$home/$file", "$user@$host.local:$home/$file";
+            my Proc $r = run "rsync", "-auv", |@opts, "$home/$file", "$user@$host.local:$home/$file";
             %results{$file} = $r.exitcode unless $r.exitcode == 0;
             dd $r;
             dd $result;
@@ -720,8 +818,8 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         if run 'ssh', "$user@$host.local", "ls -d '$t'" {
             my $t0 = $t.IO.dirname;
             run 'mkdir', '-pv', $t0;
-            say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$home/$file", "$home/$file";
-            my Proc $r = run "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$home/$file", "$home/$file";
+            say join ' ', "rsync", "-auv", |@opts, "$user@$host.local:$home/$file", "$home/$file";
+            my Proc $r = run "rsync", "-auv", |@opts, "$user@$host.local:$home/$file", "$home/$file";
             %results{$file} = $r.exitcode unless $r.exitcode == 0;
             dd $r;
             dd $result;
@@ -730,6 +828,10 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
         say "";
         $cnt++;
         "$sync-flags/$host".IO.spurt: $cnt;
+        inc-sub-place();
+        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+        inc-place();
+        progress-bar(" Total: ", get-place(), get-length());
     }
     unless "$home/specials".IO ~~ :e {
         my Proc $res = run "mkdir", "-pv", "'$home/specials'";
@@ -739,36 +841,54 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync
             return $result, %results;
         }
     }
-    my $t3 = "specials/";
+    my $t3 = "specials";
     my Proc $res = run 'ssh', "$user@$host.local", "mkdir", "-pv", "'$t3'";
     if $res.exitcode != 0 {
         "error cannot mkdir: $t3, on remote system $user@$host.local".say;
         $result +|= $res.exitcode;
         return $result, %results;
     }
-    say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$home/specials/", "$user@$host.local:$t3";
-    my Proc $rr = run "rsync", "-auv", "--progress", $exclude-option, "$home/specials/", "$user@$host.local:$t3";
-    $cnt++;
-    "$sync-flags/$host".IO.spurt: $cnt;
-    %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
-    $result +|= $rr.exitcode;
-    say join ' ', "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$t3", "$home/specials/";
-    my Proc $r0 = run "rsync", "-auv", "--progress", $exclude-option, "$user@$host.local:$t3", "$home/specials/";
-    $cnt++;
-    "$sync-flags/$host".IO.spurt: $cnt;
-    %results{"$user@$host.local:$t3"} = $r0.exitcode unless $r0.exitcode == 0;
-    $result +|= $r0.exitcode;
-    dd %results;
-    say "";
-    $cnt++;
-    "$sync-flags/$host".IO.spurt: $cnt;
+    for @internal-hosts -> $host_ {
+        @opts = "--exclude-from=$config/exclude-files";
+        push @opts = "--progress" if $progress;
+        push @opts, "--delete" if $delete && $host_ eq $thishost;
+        say join ' ', "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+        my Proc $rr = run "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+        $cnt++;
+        "$sync-flags/$host".IO.spurt: $cnt;
+        %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
+        $result +|= $rr.exitcode;
+        inc-sub-place();
+        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+        inc-place();
+        progress-bar(" Total: ", get-place(), get-length());
+        @opts = "--exclude-from=$config/exclude-files";
+        push @opts = "--progress" if $progress;
+        push @opts, "--delete" if $delete && $host_ ne $thishost && $host_ eq $host;
+        say join ' ', "rsync", "-auv", |@opts, "$user@$host.local:$t3/$host_/", "$home/specials/$host_/";
+        my Proc $r0 = run "rsync", "-auv", |@opts, "$user@$host.local:$t3/$host_/", "$home/specials/$host_/";
+        $cnt++;
+        "$sync-flags/$host".IO.spurt: $cnt;
+        %results{"$user@$host.local:$t3/"} = $r0.exitcode unless $r0.exitcode == 0;
+        $result +|= $r0.exitcode;
+        dd %results;
+        say "";
+        $cnt++;
+        "$sync-flags/$host".IO.spurt: $cnt;
+        inc-sub-place();
+        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+        inc-place();
+        progress-bar(" Total: ", get-place(), get-length());
+    } # for @internal-hosts -> $host_ #
     while @signal {
         my &elt = @signal.pop;
         &elt();
     }
-    signal().tap({ exit $_ });
+    sub-progress-bar("$current-host: ", get-sub-length(), get-sub-length());
     return $result, %results;
-} # sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files, Str @sync-specials) returns List is export #
+} #`«« sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files,
+                        Str @sync-specials, 
+                                 Bool:D $progress, Bool:D $delete --> List) is export »»
 
 sub resolve-dir(Str $dir, Bool $relitive-to-home = True) returns Str is export {
     my Str $Dir = $dir;

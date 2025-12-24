@@ -12,6 +12,7 @@ my %*SUB-MAIN-OPTS;
 #use lib "{%*ENV<HOME>}/.raku";
 
 use BackupAndSync;
+use Guage;
 
 if ! insure-config-is-present() {
     die "problem with config files";
@@ -85,10 +86,29 @@ L<Top of Document|#table-of-contents>
 =end pod
 
 
-multi sub MAIN('specials') returns Int {
+multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     my Int $result = 0;
+    my Str:D $prog = $*PROGRAM-NAME.IO.basename;
+    if $version {
+        my Str:D $mod-version    = version();
+        my Str:D $version-suffix = version-suffix();
+        $*ERR.say: "$prog {$mod-version}-$version-suffix";
+        exit(0);
+    }
+    set-bar-char($bar-char);
+    set-empty-char($empty-char);
+    set-prefix-foreground($prefix-foreground);
+    set-prefix-background($prefix-background);
+    set-guage-foreground($guage-foreground);
+    set-guage-background($guage-background);
+    set-suffix-foreground($suffix-foreground);
+    set-suffix-background($suffix-background);
     my %results;
-    my ($r, %results_catch) = specials($thishost, @backup-specials);;
+    my ($r, %results_catch) = specials($thishost, @backup-specials, $progress, $delete);
     %results{$thishost} = %results_catch;
     $result +|= $r;
     "\$r == $r".say;
@@ -99,12 +119,32 @@ multi sub MAIN('specials') returns Int {
 }
 #= backup special files and directories to per system special location.
 
-multi sub MAIN('new', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device) returns Int {
+multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
+                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     my Int $result = 0;
+    my Str:D $prog = $*PROGRAM-NAME.IO.basename;
+    if $version {
+        my Str:D $mod-version    = version();
+        my Str:D $version-suffix = version-suffix();
+        $*ERR.say: "$prog {$mod-version}-$version-suffix";
+        exit(0);
+    }
+    set-bar-char($bar-char);
+    set-empty-char($empty-char);
+    set-prefix-foreground($prefix-foreground);
+    set-prefix-background($prefix-background);
+    set-guage-foreground($guage-foreground);
+    set-guage-background($guage-background);
+    set-suffix-foreground($suffix-foreground);
+    set-suffix-background($suffix-background);
     my %results;
     $backup-to ~= "/$time";
     $backup-to.say;
-    my ($r, %results_catch) = backup-me($thishost, $backup-to, @backup-dirs, @backup-files, @backup-specials);;
+    my ($r, %results_catch) = backup-me($thishost, $backup-to, @backup-dirs, @backup-files, @backup-specials, $progress, $delete);
     %results{$thishost} = %results_catch;
     $result +|= $r;
     "\$r == $r".say;
@@ -115,8 +155,28 @@ multi sub MAIN('new', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is 
 }
 #= create a new backup on device.
 
-multi sub MAIN('add-to-last', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device){
+multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
+                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int){
     my Int $result = 0;
+    my Str:D $prog = $*PROGRAM-NAME.IO.basename;
+    if $version {
+        my Str:D $mod-version    = version();
+        my Str:D $version-suffix = version-suffix();
+        $*ERR.say: "$prog {$mod-version}-$version-suffix";
+        exit(0);
+    }
+    set-bar-char($bar-char);
+    set-empty-char($empty-char);
+    set-prefix-foreground($prefix-foreground);
+    set-prefix-background($prefix-background);
+    set-guage-foreground($guage-foreground);
+    set-guage-background($guage-background);
+    set-suffix-foreground($suffix-foreground);
+    set-suffix-background($suffix-background);
     my %results;
     $backup-to ~= "/$time";
     $backup-to.say;
@@ -129,7 +189,7 @@ multi sub MAIN('add-to-last', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup
         $back-to = [max] @candidates;
     }
     $back-to.say;
-    my ($r, %results_catch) = backup-me($thishost, $back-to, @backup-dirs, @backup-files, @backup-specials);;
+    my ($r, %results_catch) = backup-me($thishost, $back-to, @backup-dirs, @backup-files, @backup-specials, $progress, $delete);
     %results{$thishost} = %results_catch;
     $result +|= $r;
     "\$r == $r".say;
@@ -139,7 +199,11 @@ multi sub MAIN('add-to-last', Str :t(:$time) = DateTime.now.Str, Str :b(:$backup
     exit $result;
 }
 
-multi sub MAIN('restore', 'last', Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int {
+multi sub MAIN('restore', 'last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int {
     my Int $result = 0;
     my %results;
     $restore-from ~= "/$time";

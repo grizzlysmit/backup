@@ -10,6 +10,7 @@ my %*SUB-MAIN-OPTS;
 }
 
 use BackupAndSync;
+use Guage;
 
 if ! insure-config-is-present() {
     die "problem with config files";
@@ -78,28 +79,46 @@ Usage:
 
 =end pod
 
-multi sub MAIN(--> Int){
+multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str:D :$sub-bar-char = '◼', Str:D :$sub-empty-char = ' ', Str:D :$sub-guage-foreground = "bold,green",
+                                Str:D :$sub-guage-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
+                                    Str:D :$sub-suffix-background = "cyan", Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     clean-up-mon-sync();
-    my Int $result = 0;
-    my %results;
-    for @hosts -> $host {
-        if $host eq $thishost {
-            say "$thishost.local <---> $host.local: skipped";
-        } elsif ! shell("ping -c 1 $host.local > /dev/null 2>&1 ") {
-            say "$host.local does not exist  or is down";
-            say "$thishost.local <---> $host.local: skipped";
-        } else {
-            my ($r, %results_catch) = sync-me($thishost, $host, @sync-dirs, @sync-files, @sync-specials);
-            %results{$host} = %results_catch;
-            $result +|= $r;
-            "\$r == $r".say;
-            dd $result;
-        }
+    my Str:D $prog = $*PROGRAM-NAME.IO.basename;
+    if $version {
+        my Str:D $mod-version    = version();
+        my Str:D $version-suffix = version-suffix();
+        $*ERR.say: "$prog {$mod-version}-$version-suffix";
+        exit(0);
     }
+    set-bar-char($bar-char);
+    set-empty-char($empty-char);
+    set-prefix-foreground($prefix-foreground);
+    set-prefix-background($prefix-background);
+    set-guage-foreground($guage-foreground);
+    set-guage-background($guage-background);
+    set-suffix-foreground($suffix-foreground);
+    set-suffix-background($suffix-background);
+    set-sub-bar-char($sub-bar-char);
+    set-sub-empty-char($sub-empty-char);
+    set-sub-guage-foreground($sub-guage-foreground);
+    set-sub-guage-background($sub-guage-background);
+    set-sub-suffix-foreground($sub-suffix-foreground);
+    set-sub-suffix-background($sub-suffix-background);
+    my ($result, %results) = sync-me-master($progress, $delete);
     #dd %results;
     %results.gist.say;
     exit $result;
-}
+} #`««« multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :F(:$prefix-foreground) = "bold,red", Str:D :B(:$prefix-background) = "green",
+                    Str:D :F(:$guage-foreground) = "bold,red", Str:D :B(:$guage-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str:D :$sub-bar-char = '◼', Str:D :$sub-empty-char = ' ', Str:D :$sub-guage-foreground = "bold,green",
+                                Str:D :$sub-guage-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
+                                    Str:D :$sub-suffix-background = "cyan", Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) »»»
 #= Synchronise systems in hosts file.
 
 multi sub MAIN('configs', 'list') returns Int {
