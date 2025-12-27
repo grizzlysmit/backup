@@ -1,9 +1,9 @@
-unit module BackupAndSync:ver<0.1.3>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
+unit module BackupAndSync:ver<0.2.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
 my Int:D $version-major     = 0;
-my Int:D $version-minor     = 1;
-my Int:D $version-sub-minor = 3;
+my Int:D $version-minor     = 2;
+my Int:D $version-sub-minor = 0;
 use IO::Glob;
-use Guage;
+use Terminal::Gauge;
 
 =begin pod
 
@@ -26,7 +26,7 @@ Table of Contents
 
 =NAME BackupAndSync.rakumod 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
-=VERSION 0.1.2
+=VERSION 0.2.0
 =TITLE BackupAndSync.rakumod
 =SUBTITLE A B<Raku> module for supporting the backup and sync of a set of boxes.
 
@@ -758,7 +758,6 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files,
     set-sub-length(@internal-dirs + @internal-files + 2 * @internal-hosts);
     init-sub-place();
     sub-progress-bar("$current-host: ", get-place(), get-length());
-    #signal(SIGINT, SIGHUP, SIGQUIT, SIGTERM, SIGQUIT).tap( { &stack(); say "$_ Caught"; exit 0 } );
     "$thishost.local <---> $host.local".say;
     my Int $result = 0;
     my Int:D $cnt = 0;
@@ -849,19 +848,24 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files,
         return $result, %results;
     }
     for @internal-hosts -> $host_ {
-        @opts = "--exclude-from=$config/exclude-files";
-        push @opts = "--progress" if $progress;
-        push @opts, "--delete" if $delete && $host_ eq $thishost;
-        say join ' ', "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
-        my Proc $rr = run "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
-        $cnt++;
-        "$sync-flags/$host".IO.spurt: $cnt;
-        %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
-        $result +|= $rr.exitcode;
-        inc-sub-place();
-        sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
-        inc-place();
-        progress-bar(" Total: ", get-place(), get-length());
+        my Bool:D $skipped = False;
+        if $host_ eq $thishost {
+            @opts = "--exclude-from=$config/exclude-files";
+            push @opts = "--progress" if $progress;
+            push @opts, "--delete" if $delete;
+            say join ' ', "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+            my Proc $rr = run "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+            $cnt++;
+            "$sync-flags/$host".IO.spurt: $cnt;
+            %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
+            $result +|= $rr.exitcode;
+            inc-sub-place();
+            sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+            inc-place();
+            progress-bar(" Total: ", get-place(), get-length());
+        } else {
+            $skipped = True;
+        }
         @opts = "--exclude-from=$config/exclude-files";
         push @opts = "--progress" if $progress;
         push @opts, "--delete" if $delete && $host_ ne $thishost && $host_ eq $host;
@@ -879,6 +883,20 @@ sub sync-me(Str $thishost, Str $host, Str @sync-dirs, Str @sync-files,
         sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
         inc-place();
         progress-bar(" Total: ", get-place(), get-length());
+        if $skipped {
+            @opts = "--exclude-from=$config/exclude-files";
+            push @opts = "--progress" if $progress;
+            say join ' ', "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+            my Proc $rr = run "rsync", "-auv", |@opts, "$home/specials/$host_/", "$user@$host.local:$t3/$host_/";
+            $cnt++;
+            "$sync-flags/$host".IO.spurt: $cnt;
+            %results{"specials/"} = $rr.exitcode unless $rr.exitcode == 0;
+            $result +|= $rr.exitcode;
+            inc-sub-place();
+            sub-progress-bar("$current-host: ", get-sub-place(), get-sub-length());
+            inc-place();
+            progress-bar(" Total: ", get-place(), get-length());
+        }
     } # for @internal-hosts -> $host_ #
     while @signal {
         my &elt = @signal.pop;

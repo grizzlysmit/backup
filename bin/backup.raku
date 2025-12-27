@@ -12,7 +12,7 @@ my %*SUB-MAIN-OPTS;
 #use lib "{%*ENV<HOME>}/.raku";
 
 use BackupAndSync;
-use Guage;
+use Terminal::Gauge;
 
 if ! insure-config-is-present() {
     die "problem with config files";
@@ -88,7 +88,7 @@ L<Top of Document|#table-of-contents>
 
 multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
-                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
                             Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     my Int $result = 0;
@@ -103,8 +103,8 @@ multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = 
     set-empty-char($empty-char);
     set-prefix-foreground($prefix-foreground);
     set-prefix-background($prefix-background);
-    set-guage-foreground($guage-foreground);
-    set-guage-background($guage-background);
+    set-gauge-foreground($gauge-foreground);
+    set-gauge-background($gauge-background);
     set-suffix-foreground($suffix-foreground);
     set-suffix-background($suffix-background);
     my %results;
@@ -121,7 +121,7 @@ multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = 
 
 multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
-                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
                             Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
                                  Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
@@ -137,8 +137,8 @@ multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫'
     set-empty-char($empty-char);
     set-prefix-foreground($prefix-foreground);
     set-prefix-background($prefix-background);
-    set-guage-foreground($guage-foreground);
-    set-guage-background($guage-background);
+    set-gauge-foreground($gauge-foreground);
+    set-gauge-background($gauge-background);
     set-suffix-foreground($suffix-foreground);
     set-suffix-background($suffix-background);
     my %results;
@@ -157,7 +157,7 @@ multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫'
 
 multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
-                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
                             Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
                                  Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int){
@@ -173,8 +173,8 @@ multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char)
     set-empty-char($empty-char);
     set-prefix-foreground($prefix-foreground);
     set-prefix-background($prefix-background);
-    set-guage-foreground($guage-foreground);
-    set-guage-background($guage-background);
+    set-gauge-foreground($gauge-foreground);
+    set-gauge-background($gauge-background);
     set-suffix-foreground($suffix-foreground);
     set-suffix-background($suffix-background);
     my %results;
@@ -199,11 +199,8 @@ multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char)
     exit $result;
 }
 
-multi sub MAIN('restore', 'last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
-                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
-                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
-                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
-                            Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int {
+multi sub MAIN('restore', 'last', 
+                Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int {
     my Int $result = 0;
     my %results;
     $restore-from ~= "/$time";

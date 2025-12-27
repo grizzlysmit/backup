@@ -10,7 +10,7 @@ my %*SUB-MAIN-OPTS;
 }
 
 use BackupAndSync;
-use Guage;
+use Terminal::Gauge;
 
 if ! insure-config-is-present() {
     die "problem with config files";
@@ -81,10 +81,10 @@ Usage:
 
 multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
-                    Str:D :G(:$guage-foreground) = "bold,red", Str:D :g(:$guage-background) = "cyan",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
-                            Str:D :$sub-bar-char = '◼', Str:D :$sub-empty-char = ' ', Str:D :$sub-guage-foreground = "bold,green",
-                                Str:D :$sub-guage-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
+                            Str:D :$sub-bar-char = '❚', Str:D :$sub-empty-char = ' ', Str:D :$sub-gauge-foreground = "bold,green",
+                                Str:D :$sub-gauge-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
                                     Str:D :$sub-suffix-background = "cyan", Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     clean-up-mon-sync();
     my Str:D $prog = $*PROGRAM-NAME.IO.basename;
@@ -98,14 +98,14 @@ multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D
     set-empty-char($empty-char);
     set-prefix-foreground($prefix-foreground);
     set-prefix-background($prefix-background);
-    set-guage-foreground($guage-foreground);
-    set-guage-background($guage-background);
+    set-gauge-foreground($gauge-foreground);
+    set-gauge-background($gauge-background);
     set-suffix-foreground($suffix-foreground);
     set-suffix-background($suffix-background);
     set-sub-bar-char($sub-bar-char);
     set-sub-empty-char($sub-empty-char);
-    set-sub-guage-foreground($sub-guage-foreground);
-    set-sub-guage-background($sub-guage-background);
+    set-sub-gauge-foreground($sub-gauge-foreground);
+    set-sub-gauge-background($sub-gauge-background);
     set-sub-suffix-foreground($sub-suffix-foreground);
     set-sub-suffix-background($sub-suffix-background);
     my ($result, %results) = sync-me-master($progress, $delete);
@@ -114,10 +114,10 @@ multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D
     exit $result;
 } #`««« multi sub MAIN(Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :F(:$prefix-foreground) = "bold,red", Str:D :B(:$prefix-background) = "green",
-                    Str:D :F(:$guage-foreground) = "bold,red", Str:D :B(:$guage-background) = "cyan",
+                    Str:D :F(:$gauge-foreground) = "bold,red", Str:D :B(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
-                            Str:D :$sub-bar-char = '◼', Str:D :$sub-empty-char = ' ', Str:D :$sub-guage-foreground = "bold,green",
-                                Str:D :$sub-guage-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
+                            Str:D :$sub-bar-char = '◼', Str:D :$sub-empty-char = ' ', Str:D :$sub-gauge-foreground = "bold,green",
+                                Str:D :$sub-gauge-background = "red", Str:D :$sub-suffix-foreground = "bold,red", 
                                     Str:D :$sub-suffix-background = "cyan", Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) »»»
 #= Synchronise systems in hosts file.
 
