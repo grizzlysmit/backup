@@ -66,3 +66,19 @@ sub backup-device-val(--> Str) is export
 
 [Top of Document](#table-of-contents)
 
+### sub put-in-dirs
+
+```raku
+sub put-in-dirs(
+    Str @hosts,
+    Str $thishost,
+    Bool $silent,
+    Bool $yes is copy,
+    Int $first where { ... },
+    Int $last where { ... },
+    *@files
+) returns Bool
+```
+
+# put all files matching current* (excluding current itself) into directory current where current is succesively each value from first to last and then put files into first
+

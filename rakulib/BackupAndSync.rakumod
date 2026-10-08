@@ -60,6 +60,7 @@ constant $home is export = %*ENV<HOME>.Str();
 # config files
 constant $config is export = "$home/.local/share/backup-and-sync";
 
+
 # the user name #
 constant $user is export = %*ENV<USER>.Str();
 
@@ -450,6 +451,17 @@ sub describe-config-file(Str $file) returns Str:D is export {
     return $result;
 }
 
+sub link-broken(Str $file-or-dir --> Bool:D){
+    if $file-or-dir.IO ~~ :l {
+        #my $cont   = $file-or-dir.IO.slurp();
+        my $cont;
+        my Proc $r = run 'readlink',  $file-or-dir, :out;
+        $cont      = $r.out.slurp(:close).chomp() if $r.exitcode == 0;
+        return $cont.IO !~~ :e;
+    }
+    return False;
+}
+
 sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files, @backup-specials,
                                                          Bool:D $progress, Bool:D $delete --> List) is export {
     LEAVE {
@@ -477,7 +489,17 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
     init-place();
     progress-bar("", get-place(), get-length());
     for @backup-dirs -> $dir {
+        next if link-broken("$home/$dir");
         say "[$dir/]";
+        if "$home/$dir".IO ~~ :l {
+            say join ' ', "rsync", "-auv", |@opts, "$home/$dir", "$backup-to/$dir";
+            my Proc $r = run "rsync", "-auv", |@opts, "$home/$dir", "$backup-to/$dir";
+            inc-place();
+            progress-bar("", get-place(), get-length());
+            %results{$dir} = $r.exitcode unless $r.exitcode == 0;
+            $result +|= $r.exitcode;
+            next;
+        }
         my Str $t = "$backup-to/$dir/".IO.dirname;
         if $t.IO !~~ :e {
             my Proc $res = run 'mkdir', '-pv', $t;
@@ -495,7 +517,18 @@ sub backup-me(Str $thishost, Str $backup-to, Str @backup-dirs, Str @backup-files
         say "";
     }
     for @backup-files -> $file {
+        next if link-broken("$home/$file");
         say "[$file]";
+        #«««
+        if "$home/$file".IO ~~ :l {
+            say join ' ', "rsync", "-auv", |@opts, "$home/$file", "$backup-to/$file";
+            my Proc $r = run "rsync", "-auv", |@opts, "$home/$file", "$backup-to/$file";
+            inc-place();
+            progress-bar("", get-place(), get-length());
+            %results{$file} = $r.exitcode unless $r.exitcode == 0;
+            $result +|= $r.exitcode;
+            next;
+        } #»»»
         my Str $t = "$backup-to/$file".IO.dirname;
         if $t.IO !~~ :e {
             my Proc $res = run 'mkdir', '-pv', $t;
@@ -1130,7 +1163,10 @@ sub edit-configs() returns Bool:D is export {
         $cmd ~= '&' if @guieditors.grep: { rx/ ^^ $edbase $$ / };
         chdir($config.IO);
         #my $proc = run( :in => '/dev/tty', :out => '/dev/tty', :err => '/dev/tty', $editor, |@args);
+        #say '$proc = run($editor, |@args)';
+        #dd $editor, @args;
         my $proc = run($editor, |@args);
+        #dd $proc;
         return $proc.exitcode == 0 || $proc.exitcode == -1;
     } else {
         "no editor found please set GUI_EDITOR, VISUAL or EDITOR to your preferred editor.".say;
@@ -1438,12 +1474,18 @@ sub move-files-on-all-synced-systems(Str @hosts, Str $thishost, Bool $silent, Bo
     return $result;
 } #`««« sub move-files-on-all-synced-systems(Str @hosts, Str $thishost, Bool $silent, Bool $yes is copy,
                                      Str $dest is copy, *@files --> Bool) is export »»»
-
+                                     
+#|«
+# put all files matching current*
+ (excluding current itself) into directory current
+ where current is succesively each value from first to last
+ and then put files into first
+»
 sub put-in-dirs(Str @hosts, Str $thishost, Bool $silent, Bool $yes is copy, Int $first where { $first > 0 },
                     Int $last where { $first <= $last }, *@files --> Bool) is export {
     my Bool $result = True;
     for $first .. $last -> $current {
-        #"$current".IO.mkdir();
+        "$current".IO.mkdir() unless "$current".IO ~~ :e;
         my Str @candidates = glob("{$current}*").map: { $_.Str };
         @candidates = @candidates.grep: { !rx/ ^^ $current $$ / };
         my $res = move-files-on-all-synced-systems(@hosts, $thishost, $silent, $yes, $current.Str, |@candidates);

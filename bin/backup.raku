@@ -3,6 +3,7 @@ use v6;
 
 my %*SUB-MAIN-OPTS;
 %*SUB-MAIN-OPTS«named-anywhere» = True;
+%*ENV«RAKUDO_POD_DECL_BLOCK_USER_FORMAT» = 1;
 #%*SUB-MAIN-OPTS<bundling>       = True;
 
 #`{ 
@@ -85,7 +86,7 @@ L<Top of Document|#table-of-contents>
 
 =end pod
 
-
+#| # backup special files and directories to per system special location
 multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
                     Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
@@ -116,9 +117,13 @@ multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = 
     #dd %results;
     %results.gist.say;
     exit $result;
-}
-#= backup special files and directories to per system special location.
+} #`««« multi sub MAIN('specials', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                        Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) »»»
 
+#| # create a new backup on device.
 multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
                     Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
@@ -152,15 +157,20 @@ multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫'
     #dd %results;
     %results.gist.say;
     exit $result;
-}
-#= create a new backup on device.
+} #`««« multi sub MAIN('new', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
+                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) »»»
 
+#| # add to the last backup on the device 
 multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
                 Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
                     Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
                         Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
                             Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
-                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int){
+                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) {
     my Int $result = 0;
     my Str:D $prog = $*PROGRAM-NAME.IO.basename;
     if $version {
@@ -197,8 +207,14 @@ multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char)
     #dd %results;
     %results.gist.say;
     exit $result;
-}
+} #`««« multi sub MAIN('add-to-last', Bool:D :v(:$version) = False, Str:D :c(:$bar-char) = '⧫', Str:D :e(:$empty-char) = ' ',
+                Str:D :P(:$prefix-foreground) = "bold,red", Str:D :p(:$prefix-background) = "green",
+                    Str:D :G(:$gauge-foreground) = "bold,red", Str:D :g(:$gauge-background) = "cyan",
+                        Str:D :S(:$suffix-foreground) = "bold,green", Str:D :s(:$suffix-background) = 'blue', 
+                            Str :t(:$time) = DateTime.now.Str, Str :b(:$backup-to) is copy = $backup-device, 
+                                 Bool:D :r(:$progress) = False, Bool:D :d(:$delete) = False --> Int) »»»
 
+#| # restore from the last bacup on the device
 multi sub MAIN('restore', 'last', 
                 Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int {
     my Int $result = 0;
@@ -220,9 +236,12 @@ multi sub MAIN('restore', 'last',
     }
     $rest-from.say;
     exit restore-me($thishost, $rest-from, $To, $force, @backup-dirs, @backup-files);
-}
+} #`««« multi sub MAIN('restore', 'last', 
+                Str :t(:$time) = DateTime.now.Str, Str :r(:$restore-from) is copy = "$backup-device", Str :T(:$to) = "$home", Bool :f(:$force) = False) returns Int »»»
 
-multi sub MAIN('restore', 'menu', Str :r(:$restore-from) = $backup-device, Str :T(:$to) = "$home", Bool :f(:$force) = False, Bool :l(:$list-all) = False) returns Int {
+#| # prompt with a menu to seclect and restore from backups on the device 
+multi sub MAIN('restore', 'menu', Str :r(:$restore-from) = $backup-device, Str :T(:$to) = "$home",
+                                                Bool :f(:$force) = False, Bool :l(:$list-all) = False) returns Int {
     my Str $To = resolve-dir($to);
     #$restore-from.say;
     if $restore-from.IO !~~ :e {
@@ -232,13 +251,18 @@ multi sub MAIN('restore', 'menu', Str :r(:$restore-from) = $backup-device, Str :
     my $rest-from = menu($restore-from, "Choose a backup to restore from:", $list-all);
     exit 0 if $rest-from eq 'cancel';
     exit restore-me($thishost, $rest-from, $To, $force, @backup-dirs, @backup-files);
-}
+} #`««« multi sub MAIN('restore', 'menu', Str :r(:$restore-from) = $backup-device, Str :T(:$to) = "$home", 
+                                                Bool :f(:$force) = False, Bool :l(:$list-all) = False) returns Int »»»
 
-multi sub MAIN('get', 'files', Str :r(:$restore-from) = $backup-device, Str :T(:$to) = "$home", Bool :f(:$force) = False, Bool :l(:$list-all) = False, *@files) returns Int {
+#| # restore these files from the backup bacup is specified by menu
+multi sub MAIN('get', 'files', Str :r(:$restore-from) = $backup-device, Str :T(:$to) = "$home",
+                                                Bool :f(:$force) = False, Bool :l(:$list-all) = False, *@files) returns Int {
     return get-files($restore-from, $to, $force, $list-all, |@files);
 }
 
-multi sub MAIN('remove', Str :r(:$remove-from) = $backup-device, Bool :s(:$silent) = False, Bool :l(:$list-all) = False --> Int) {
+#| # remove backup chosen by menu from device 
+multi sub MAIN('remove', Str :r(:$remove-from) = $backup-device,
+                                                Bool :s(:$silent) = False, Bool :l(:$list-all) = False --> Int) {
     if $remove-from.IO !~~ :e {
         "no device $remove-from present".say;
         exit 1;
@@ -252,10 +276,12 @@ multi sub MAIN('remove', Str :r(:$remove-from) = $backup-device, Bool :s(:$silen
     }
 }
 
+#| # list all backups 
 multi sub MAIN('list',  Bool :a(:$all) = False, Str :d(:$dir) = $backup-device) returns Int {
     exit list-all($dir, $all);
 }
 
+#| # list and describe all configfiles 
 multi sub MAIN('configs', 'list') returns Int {
     "$config:".say;
     for @config-files -> $file {
@@ -264,6 +290,7 @@ multi sub MAIN('configs', 'list') returns Int {
     exit 0;
 }
 
+#| # set the device for backups to the device file
 multi sub MAIN('set', 'device', Str:D $device) returns Int {
    if set-device($device) {
        exit 0;
@@ -272,6 +299,7 @@ multi sub MAIN('set', 'device', Str:D $device) returns Int {
    } 
 }
 
+#| # add a gui ewditor to the configuration file device 
 multi sub MAIN('add', 'guieditor', Str:D $guieditor) returns Int {
    if add-guieditor($guieditor) {
        exit 0;
@@ -280,6 +308,7 @@ multi sub MAIN('add', 'guieditor', Str:D $guieditor) returns Int {
    } 
 }
 
+#| # add a pattern to the configuration file exclude-files
 multi sub MAIN('add', 'file-exclusion', Str:D $pattern) returns Int {
    if add-file-exclusion($pattern) {
        exit 0;
@@ -288,6 +317,7 @@ multi sub MAIN('add', 'file-exclusion', Str:D $pattern) returns Int {
    } 
 }
 
+#| # edit all config files in the gui editorof your choice. 
 multi sub MAIN('edit', 'configs') returns Int {
    if edit-configs() {
        exit 0;
@@ -296,11 +326,13 @@ multi sub MAIN('edit', 'configs') returns Int {
    } 
 }
 
+#| # display help message
 multi sub MAIN('help') returns Int {
     $*USAGE.say;
     exit 0;
 }
 
+#| # display usage message
 multi sub MAIN('usage') returns Int {
     $*USAGE.say;
     exit 0;
