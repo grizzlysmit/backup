@@ -37,7 +37,7 @@ Table of Contents
 
 =NAME sync.raku 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
-=VERSION 0.2.7
+=VERSION 0.2.8
 =TITLE sync.raku
 =SUBTITLE A B<Raku> application for synchronising a set of boxes.
 

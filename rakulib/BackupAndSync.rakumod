@@ -1,4 +1,4 @@
-unit module BackupAndSync:ver<0.2.7>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
+unit module BackupAndSync:ver<0.2.8>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>;
 my Int:D $version-major     = 0;
 my Int:D $version-minor     = 2;
 my Int:D $version-sub-minor = 0;
@@ -26,7 +26,7 @@ Table of Contents
 
 =NAME BackupAndSync.rakumod 
 =AUTHOR Francis Grizzly Smit (grizzly@smit.id.au)
-=VERSION 0.2.7
+=VERSION 0.2.8
 =TITLE BackupAndSync.rakumod
 =SUBTITLE A B<Raku> module for supporting the backup and sync of a set of boxes.
 

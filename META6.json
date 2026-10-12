@@ -10,7 +10,9 @@
         "IO::Glob"
     ],
     "provides" : {
-        "BackupAndSync" : "rakulib/BackupAndSync.rakumod",
+        "BackupAndSync" : "rakulib/BackupAndSync.rakumod"
+    }, 
+    "bin": {
         "backup": "bin/backup.raku",
         "sync.raku": "bin/sync.raku"
     },
@@ -21,7 +23,7 @@
         "bugtracker": "https://github.com/grizzlysmit/backup/issues"
     },
     "auth": "zef:grizzlysmit",
-    "version" : "0.2.7",
+    "version" : "0.2.8",
     "tags" : [ "usage", "backup", "sync", "rsync" ],
   "test-depends": [
   ]
